@@ -1,83 +1,38 @@
-# CLAUDE.md — `website-templates` (main branch)
+# CLAUDE.md — `fitness-studio` Template
 
-Repo-wide context for future sessions. **Read this first.** Each website template
-lives on its **own branch** and carries its own `CLAUDE.md` with template-specific
-detail.
+This template is a high-end, dark-themed fitness studio landing page called **APEX GRID**. It uses bold contrasts, high-density layout grids, neon orange highlights, and high-performance branding to convey strength, precision, and hardcore community belonging.
 
-## The model
+## Dev Commands
 
-- **`main`** holds no website — only docs, the deploy workflows, and a shared
-  composite action.
-- **Every website is a branch off `main`** (`portfolio`, `saas-landing`, …). You
-  never merge templates into `main`; they live independently, in parallel.
-- Branches inherit `main`'s `.github/` (workflows + action), so a new branch is
-  immediately deployable.
+- **Start Dev Server**: `npm run dev` (Served at `http://localhost:5173`)
+- **Production Build**: `npm run build` (Outputs optimized assets to `dist/`)
+- **Preview Production Build**: `npm run preview`
 
-### Current template branches
+## Tech Stack
 
-| Branch | What it is | Stack |
-| --- | --- | --- |
-| `commercial-space-planner` | **Plot** — interactive 3D space planner (café/office/retail): floor-plan ⇄ 3D, capacity, egress, brand colour, cost, PDF export | Vanilla JS + Three.js/jsPDF via CDN, **no build** |
-| `japandi-wellness` | **Nagi** — Japandi wellness/mindful-living landing page, meditative scroll-reveal narrative | React 18 + Vite, builds to `dist/` |
+- **Core**: React 18 + TypeScript + Vite
+- **Styling**: Vanilla CSS (modular, customized variables for colors and borders, CSS animations)
+- **Icons**: `lucide-react` (clean vector geometry)
 
-## Adding a new template
+## File Map
 
-```bash
-git checkout main
-git checkout -b <branch-name>     # e.g. portfolio
-# ...build the site...
-git add -A && git commit -m "<branch-name> template"
-git push -u origin <branch-name>
+```
+f:\website-templates/
+├── index.html            # Google Fonts Loader (Bebas Neue, Barlow Condensed, Inter)
+├── package.json          # Vite & React configurations
+├── vite.config.ts        # Custom configuration (asset paths relative for Pages)
+├── src/
+│   ├── main.tsx          # App entry point
+│   ├── index.css         # Global design system, typography, grain overlay, parallax drift
+│   ├── App.tsx           # Main application structure & dynamic states
+│   └── App.css           # Grid styles, 3D card flips, carousel drag handlers
+└── public/               # Asset folder
 ```
 
-Then deploy from the **Actions** tab (see below). **Add a `CLAUDE.md` to each new
-branch** describing that template (concept, stack, file map, how to reuse).
+## Key Aesthetic & Interactive Mechanisms
 
-## Conventions for a template branch
-
-- **Static HTML or no-build JS** → put `index.html` at the branch root (or in
-  `public/`/`src/` with an `index.html`). Served as-is.
-- **Node build** (Vite/React/etc.) → `package.json` with a `build` script that
-  outputs to `dist/`, `build/`, or `out/`. **Commit `package-lock.json`** (the
-  workflow runs `npm ci`). **Set the bundler's base path to relative** (Vite:
-  `base: './'`) so assets resolve under the Pages sub-path.
-- **PHP / WordPress theme** → a folder containing `style.css` with a
-  `Theme Name:` header. Detected automatically.
-- For local preview, add a `.claude/launch.json` with the dev/serve command.
-
-## Deploying (all manual — `workflow_dispatch`)
-
-Go to **Actions** → pick a workflow → **Run workflow** → type the **branch name**.
-
-| Workflow | Use for | Result |
-| --- | --- | --- |
-| **Deploy to GitHub Pages (static / Node)** | static-HTML or Node-built templates | Publishes to `gh-pages/<branch>/`; all templates stay live in one gallery. Auto-builds if a `build` script exists |
-| **Deploy WordPress to GitHub Pages** | PHP/WordPress templates | Boots real WP (or PHP server), crawls to a **static snapshot**, publishes to the same gallery |
-| **Release WordPress theme** | shipping a WP theme | Builds an installable theme `.zip` (artifact; GitHub Release if a `tag` is given) |
-| **Deploy to Vercel** | per-deploy shareable preview | Unique preview URL (needs `VERCEL_TOKEN`/`VERCEL_ORG_ID`/`VERCEL_PROJECT_ID` secrets) |
-
-- Gallery index: `https://nileshvermaa.github.io/website-templates/`
-- A template: `…/website-templates/<branch>/`
-- All Pages deploys share `.github/actions/publish-to-gh-pages` (clones
-  `gh-pages`, replaces only `<branch>/`, regenerates the index). The deploy
-  workflow checks out `main` (for the action) and the template branch into
-  `_template/`.
-- **One-time:** Settings → Pages → *Deploy from a branch* → `gh-pages` / root.
-
-## Using a template for a real project
-
-Two options:
-1. **Branch from it:** `git checkout <template> && git checkout -b <client>-<project>`
-   — keeps the template pristine while you customise.
-2. **Copy it out:** copy the branch's files into a new standalone repo.
-
-Each template's own `CLAUDE.md` documents what to change (content arrays, CSS
-variables, reusable components) to re-skin it.
-
-## Platform notes
-
-- Windows host; default shell is PowerShell, with a Bash tool also available.
-- Git line-ending warnings (LF→CRLF) on commit are harmless — files are stored as LF.
-- `requestAnimationFrame` / `IntersectionObserver` are throttled in hidden/headless
-  preview tabs, so animation-driven templates may look blank there but work on the
-  live (visible) page.
+1. **Grain Parallax**: Custom SVG noise background defined in `src/index.css`. React listens to page scroll events and updates a `--scroll-top` CSS variable on the document element, drifting the grain vertically to create a deep, textured, multi-dimensional dark theme.
+2. **Slow-Motion Training Loop**: Background video hero that auto-plays in grayscale/high-contrast. Includes an unmute control button synced via React ref.
+3. **3D Coach Flip Cards**: Built using hardware-accelerated 3D transforms (`rotateY(180deg)` and `backface-visibility: hidden`). Hovering flips the coach's front face to reveal details, certifications, and signature workouts.
+4. **Member Story Carousel**: Custom touch/mouse drag-to-swipe tracker implemented with pure React state. Supports auto-advancing slide intervals and dynamic damping (rubber-band easing) when dragging past the boundaries.
+5. **Sticky Pulse CTA**: Snaps into place as a bottom sticky banner as soon as the user scrolls past the main hero fold.
