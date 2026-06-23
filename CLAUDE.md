@@ -19,6 +19,7 @@ detail.
 | --- | --- | --- |
 | `commercial-space-planner` | **Plot** — interactive 3D space planner (café/office/retail): floor-plan ⇄ 3D, capacity, egress, brand colour, cost, PDF export | Vanilla JS + Three.js/jsPDF via CDN, **no build** |
 | `japandi-wellness` | **Nagi** — Japandi wellness/mindful-living landing page, meditative scroll-reveal narrative | React 18 + Vite, builds to `dist/` |
+| `bauhaus-landing-page` | **FormFab** — Bauhaus-inspired single-page landing for an architectural fabrication & modular design service; bold primary-colour geometry, structural CSS Grid, mechanical hover animations | React 18 + Vite + TypeScript, builds to `dist/` |
 
 ## Adding a new template
 
