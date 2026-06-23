@@ -1,10 +1,12 @@
 # website-templates
 
 A single repository that holds many website templates — **one template per branch**.
+Templates can be static HTML, Node-built (Vite/Next/etc.), **or PHP/WordPress themes**.
 
-The `main` branch contains no website. It only holds the documentation and the
-GitHub Actions deploy workflows. Every actual website lives on its own branch
-(`portfolio`, `saas-landing`, `restaurant`, …) created from `main`.
+The `main` branch contains no website. It only holds the documentation, a shared
+composite action, and the GitHub Actions deploy workflows. Every actual website
+lives on its own branch (`portfolio`, `saas-landing`, `lumen-wellness`, …)
+created from `main`.
 
 ## How it works
 
@@ -43,6 +45,28 @@ Workflow: **Deploy to GitHub Pages**.
 **One-time setup:** in repo **Settings → Pages**, set the source to
 **Deploy from a branch → `gh-pages` / root**. (The first Pages run creates the
 `gh-pages` branch automatically.)
+
+### PHP / WordPress
+
+PHP can't run on GitHub Pages or Vercel, so these get their own paths.
+
+**Preview (free, in the gallery)** — workflow: **Deploy WordPress to GitHub Pages**.
+It boots a real environment in CI, renders the site, crawls it to a **static
+snapshot**, and publishes it to `gh-pages/<branch>/` next to the other templates.
+
+- WordPress theme branch → boots WordPress (MariaDB + WP-CLI), copies the theme
+  folder(s) in, activates the theme, and crawls the homepage.
+- Plain PHP site branch → serves it with PHP's built-in server and crawls.
+- Auto-detects which: a folder with a `style.css` declaring `Theme Name:` ⇒
+  WordPress; otherwise plain PHP. You can override the theme to activate via the
+  `theme` input.
+- Caveat: the snapshot is static — the design renders exactly, but server-side
+  behaviour (form submits, AJAX, logins) won't run on Pages.
+
+**Install into a real WordPress** — workflow: **Release WordPress theme**.
+Builds an upload-ready theme `.zip` from the branch and attaches it as a workflow
+artifact (and, if you pass a `tag`, a GitHub Release). Install it via
+**Appearance → Themes → Add New → Upload**, or `wp theme install <zip> --activate`.
 
 ### Vercel (per-deploy shareable preview URL)
 

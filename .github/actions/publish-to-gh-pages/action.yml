@@ -1,0 +1,88 @@
+name: Publish to gh-pages gallery
+description: >-
+  Publish a prepared site directory into gh-pages/<branch>/ so every deployed
+  template stays live side-by-side, and regenerate the root gallery index.
+
+inputs:
+  branch:
+    description: Template branch name — used as the subfolder under gh-pages.
+    required: true
+  source-dir:
+    description: Directory containing the built/static site to publish.
+    required: true
+  token:
+    description: A token with contents:write permission (pass github.token).
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Publish to gh-pages
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        BRANCH: ${{ inputs.branch }}
+        SRC: ${{ inputs.source-dir }}
+        REPO: ${{ github.repository }}
+        OWNER: ${{ github.repository_owner }}
+        REPO_NAME: ${{ github.event.repository.name }}
+      run: |
+        set -e
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+        PAGES="$RUNNER_TEMP/gh-pages-clone"
+        rm -rf "$PAGES"
+        if git clone --depth 1 --branch gh-pages \
+             "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" "$PAGES" 2>/dev/null; then
+          echo "Cloned existing gh-pages branch."
+        else
+          echo "gh-pages does not exist yet — creating it."
+          git clone --depth 1 \
+            "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" "$PAGES"
+          ( cd "$PAGES" && git checkout --orphan gh-pages && git rm -rf . >/dev/null 2>&1 || true )
+        fi
+
+        # Replace just this template's subfolder; leave the others untouched.
+        rm -rf "$PAGES/$BRANCH"
+        mkdir -p "$PAGES/$BRANCH"
+        rsync -a \
+          --exclude '.git' \
+          --exclude '.github' \
+          --exclude 'node_modules' \
+          "$SRC"/ "$PAGES/$BRANCH"/
+        touch "$PAGES/.nojekyll"
+
+        # Regenerate the gallery index from the folders that exist.
+        cd "$PAGES"
+        {
+          echo '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+          echo '<meta name="viewport" content="width=device-width,initial-scale=1">'
+          echo '<title>Website Templates</title>'
+          echo '<style>body{font-family:system-ui,sans-serif;max-width:760px;margin:64px auto;padding:0 24px;color:#111;background:#fafafa}h1{font-size:1.6rem}a{color:#0b69ff;text-decoration:none}ul{list-style:none;padding:0}li{padding:14px 18px;margin:10px 0;background:#fff;border:1px solid #eaeaea;border-radius:10px}li:hover{border-color:#0b69ff}small{color:#666}</style>'
+          echo '</head><body><h1>Website Templates</h1><p><small>One template per branch. Click to preview.</small></p><ul>'
+          for d in */; do
+            name="${d%/}"
+            [ "$name" = "node_modules" ] && continue
+            echo "<li><a href=\"./$name/\">$name</a></li>"
+          done
+          echo '</ul></body></html>'
+        } > index.html
+
+        git add -A
+        if git diff --cached --quiet; then
+          echo "No changes to publish."
+        else
+          git commit -m "Deploy '$BRANCH' to GitHub Pages"
+          git push origin gh-pages
+        fi
+
+        {
+          echo "### Deployed :rocket:"
+          echo "Template **$BRANCH** published."
+          echo ""
+          echo "- Gallery: https://${OWNER}.github.io/${REPO_NAME}/"
+          echo "- This template: https://${OWNER}.github.io/${REPO_NAME}/${BRANCH}/"
+          echo ""
+          echo "> First deploy? Enable Pages in Settings → Pages → Deploy from a branch → gh-pages / root."
+        } >> "$GITHUB_STEP_SUMMARY"

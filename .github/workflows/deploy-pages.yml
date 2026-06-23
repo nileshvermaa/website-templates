@@ -1,9 +1,9 @@
-name: Deploy to GitHub Pages
+name: Deploy to GitHub Pages (static / Node)
 
-# Manual deploy. Pick the branch of the template you want to publish.
-# Each template is published into its own subfolder of the gh-pages branch,
-# so every deployed template stays live side-by-side and a root index.html
-# links to all of them.
+# Manual deploy for static-HTML or Node-built templates.
+# Publishes the chosen branch into gh-pages/<branch>/ so every deployed
+# template stays live side-by-side, with a regenerated gallery index.
+# For PHP/WordPress templates use "Deploy WordPress to GitHub Pages" instead.
 on:
   workflow_dispatch:
     inputs:
@@ -23,11 +23,17 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Validate branch exists
+      # Default checkout = the branch the workflow runs on (main), which holds
+      # the composite action used to publish.
+      - name: Check out infrastructure (this branch)
+        uses: actions/checkout@v4
+
+      # The template lives on another branch — check it out into a subfolder.
+      - name: Check out template branch
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.branch }}
-          fetch-depth: 0
+          path: _template
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -37,10 +43,10 @@ jobs:
       - name: Build (if needed) and locate site directory
         id: build
         shell: bash
+        working-directory: _template
         run: |
           set -e
           SITE_DIR="."
-
           if [ -f package.json ] && node -e "process.exit(require('./package.json').scripts && require('./package.json').scripts.build ? 0 : 1)"; then
             echo "package.json with a build script found — building."
             if [ -f package-lock.json ]; then npm ci; else npm install; fi
@@ -54,84 +60,12 @@ jobs:
               if [ -d "$d" ] && [ -f "$d/index.html" ]; then SITE_DIR="$d"; break; fi
             done
           fi
+          echo "Using site directory: _template/$SITE_DIR"
+          echo "site_dir=_template/$SITE_DIR" >> "$GITHUB_OUTPUT"
 
-          echo "Using site directory: $SITE_DIR"
-          echo "site_dir=$SITE_DIR" >> "$GITHUB_OUTPUT"
-
-      - name: Stage template into its subfolder
-        shell: bash
-        run: |
-          set -e
-          BRANCH="${{ inputs.branch }}"
-          SITE_DIR="${{ steps.build.outputs.site_dir }}"
-          mkdir -p "/tmp/site/$BRANCH"
-          # Copy the site, excluding VCS/build tooling noise.
-          rsync -a --delete \
-            --exclude '.git' \
-            --exclude '.github' \
-            --exclude 'node_modules' \
-            "$SITE_DIR"/ "/tmp/site/$BRANCH"/
-
-      - name: Check out gh-pages branch
-        shell: bash
-        run: |
-          set -e
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          cd "$RUNNER_TEMP"
-          git clone --depth 1 --branch gh-pages \
-            "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" pages \
-            || ( git clone --depth 1 \
-                   "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" pages \
-                 && cd pages && git checkout --orphan gh-pages && git rm -rf . >/dev/null 2>&1 || true )
-
-      - name: Update template folder and regenerate index
-        shell: bash
-        run: |
-          set -e
-          BRANCH="${{ inputs.branch }}"
-          PAGES="$RUNNER_TEMP/pages"
-          rm -rf "$PAGES/$BRANCH"
-          mkdir -p "$PAGES/$BRANCH"
-          rsync -a "/tmp/site/$BRANCH"/ "$PAGES/$BRANCH"/
-          touch "$PAGES/.nojekyll"
-
-          # Regenerate the gallery index from the folders that exist.
-          cd "$PAGES"
-          {
-            echo '<!doctype html><html lang="en"><head><meta charset="utf-8">'
-            echo '<meta name="viewport" content="width=device-width,initial-scale=1">'
-            echo '<title>Website Templates</title>'
-            echo '<style>body{font-family:system-ui,sans-serif;max-width:760px;margin:64px auto;padding:0 24px;color:#111;background:#fafafa}h1{font-size:1.6rem}a{color:#0b69ff;text-decoration:none}ul{list-style:none;padding:0}li{padding:14px 18px;margin:10px 0;background:#fff;border:1px solid #eaeaea;border-radius:10px}li:hover{border-color:#0b69ff}small{color:#666}</style>'
-            echo '</head><body><h1>Website Templates</h1><p><small>One template per branch. Click to preview.</small></p><ul>'
-            for d in */; do
-              name="${d%/}"
-              [ "$name" = "node_modules" ] && continue
-              echo "<li><a href=\"./$name/\">$name</a></li>"
-            done
-            echo '</ul></body></html>'
-          } > index.html
-
-      - name: Commit and push
-        shell: bash
-        run: |
-          set -e
-          cd "$RUNNER_TEMP/pages"
-          git add -A
-          if git diff --cached --quiet; then
-            echo "No changes to publish."
-          else
-            git commit -m "Deploy '${{ inputs.branch }}' to GitHub Pages"
-            git push origin gh-pages
-          fi
-
-      - name: Summary
-        shell: bash
-        run: |
-          echo "### Deployed :rocket:" >> "$GITHUB_STEP_SUMMARY"
-          echo "Template **${{ inputs.branch }}** published." >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Gallery: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- This template: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ inputs.branch }}/" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "> If this is the first deploy, enable Pages in Settings → Pages → Deploy from a branch → gh-pages / root." >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish to gh-pages gallery
+        uses: ./.github/actions/publish-to-gh-pages
+        with:
+          branch: ${{ inputs.branch }}
+          source-dir: ${{ steps.build.outputs.site_dir }}
+          token: ${{ github.token }}

@@ -1,0 +1,73 @@
+name: Release WordPress theme
+
+# Builds an upload-ready theme .zip from a template branch so you can install
+# it into a real WordPress (Appearance → Themes → Add New → Upload, or
+# `wp theme install <zip> --activate`).
+#
+# Always uploads the zip(s) as a workflow artifact. If you pass a tag, it also
+# publishes a GitHub Release with the zip(s) attached.
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Template branch (e.g. lumen-wellness)"
+        required: true
+        type: string
+      tag:
+        description: "Optional release tag (e.g. v1.0.0). Leave blank for artifact only."
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out template branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Build theme zip(s)
+        id: zip
+        shell: bash
+        run: |
+          set -e
+          mkdir -p _dist
+          found=0
+          # Zip every folder that looks like a WordPress theme (has a style.css
+          # declaring "Theme Name:"). zip from the folder's parent so style.css
+          # sits at the top level inside the archive — what WordPress expects.
+          while IFS= read -r css; do
+            if grep -qi "Theme Name:" "$css"; then
+              dir="$(dirname "$css")"
+              slug="$(basename "$dir")"
+              parent="$(dirname "$dir")"
+              ( cd "$parent" && zip -r "$GITHUB_WORKSPACE/_dist/${slug}.zip" "$slug" -x '*.DS_Store' '*/.*' )
+              found=$((found+1))
+            fi
+          done < <(find . -maxdepth 2 -name style.css)
+
+          if [ "$found" -eq 0 ]; then
+            echo "::error::No WordPress theme (folder with a style.css declaring 'Theme Name:') found on branch '${{ inputs.branch }}'."
+            exit 1
+          fi
+          echo "Built $found theme zip(s):"
+          ls -lh _dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.branch }}-theme
+          path: _dist/*.zip
+
+      - name: Publish release
+        if: inputs.tag != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          name: ${{ inputs.branch }} ${{ inputs.tag }}
+          files: _dist/*.zip
+          generate_release_notes: true

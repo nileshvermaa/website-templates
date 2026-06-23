@@ -1,0 +1,196 @@
+name: Deploy WordPress to GitHub Pages
+
+# Manual deploy for PHP / WordPress templates.
+#
+# Spins up a real environment in CI, renders the site, crawls it to a static
+# HTML snapshot, and publishes it into gh-pages/<branch>/ alongside the other
+# templates (same gallery as the static/Node workflow).
+#
+#   - WordPress theme branch  -> boots WordPress (MariaDB + WP-CLI), activates
+#     the theme, and crawls the homepage.
+#   - Plain PHP site branch   -> serves it with PHP's built-in server and crawls.
+#
+# NOTE: this is a STATIC snapshot. The design renders exactly, but server-side
+# behaviour (form submits, AJAX, logins) won't run on Pages. To deploy to a
+# live PHP host instead, see "Release WordPress theme" or wire up an FTP/SFTP
+# deploy.
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Template branch to deploy (e.g. lumen-wellness)"
+        required: true
+        type: string
+      theme:
+        description: "Theme folder to activate (optional; auto-detected if blank)"
+        required: false
+        type: string
+      site_title:
+        description: "Preview site title"
+        required: false
+        default: "Website Template — Preview"
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: mariadb:11
+        env:
+          MARIADB_DATABASE: wp
+          MARIADB_USER: wp
+          MARIADB_PASSWORD: wp
+          MARIADB_ROOT_PASSWORD: rootpass
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+
+    steps:
+      - name: Check out infrastructure (this branch)
+        uses: actions/checkout@v4
+
+      - name: Check out template branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          path: _template
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mysqli, gd, zip, mbstring
+          coverage: none
+
+      - name: Detect template type
+        id: detect
+        shell: bash
+        run: |
+          set -e
+          THEME_DIR=""
+
+          # Honour an explicit theme input first.
+          if [ -n "${{ inputs.theme }}" ] && [ -f "_template/${{ inputs.theme }}/style.css" ]; then
+            THEME_DIR="_template/${{ inputs.theme }}"
+          else
+            # Auto-detect: a WordPress theme is a folder with a style.css that
+            # declares "Theme Name:". Prefer a parent theme (no "Template:").
+            while IFS= read -r css; do
+              if grep -qi "Theme Name:" "$css"; then
+                if ! grep -qi "^[[:space:]]*Template:" "$css"; then
+                  THEME_DIR="$(dirname "$css")"; break
+                fi
+                [ -z "$THEME_DIR" ] && THEME_DIR="$(dirname "$css")"
+              fi
+            done < <(find _template -maxdepth 2 -name style.css)
+          fi
+
+          if [ -n "$THEME_DIR" ]; then
+            echo "Detected WordPress theme: $THEME_DIR"
+            echo "mode=wordpress" >> "$GITHUB_OUTPUT"
+            echo "theme_slug=$(basename "$THEME_DIR")" >> "$GITHUB_OUTPUT"
+          else
+            echo "No WordPress theme found — treating as a plain PHP site."
+            echo "mode=php" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ---------- WordPress mode ----------
+      - name: Install WP-CLI
+        if: steps.detect.outputs.mode == 'wordpress'
+        run: |
+          curl -fsSL -o wp-cli.phar https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+          chmod +x wp-cli.phar
+          sudo mv wp-cli.phar /usr/local/bin/wp
+          wp --info
+
+      - name: Install WordPress & activate theme
+        if: steps.detect.outputs.mode == 'wordpress'
+        shell: bash
+        run: |
+          set -e
+          mkdir wp && cd wp
+          wp core download --version=latest
+          wp config create --dbname=wp --dbuser=wp --dbpass=wp --dbhost=127.0.0.1:3306
+          wp core install \
+            --url="http://localhost:8080" \
+            --title="${{ inputs.site_title }}" \
+            --admin_user=admin --admin_password=admin \
+            --admin_email=preview@example.com --skip-email
+          cd ..
+
+          # Copy every theme folder (parent + any child theme) into WordPress.
+          while IFS= read -r css; do
+            if grep -qi "Theme Name:" "$css"; then
+              cp -r "$(dirname "$css")" wp/wp-content/themes/
+            fi
+          done < <(find _template -maxdepth 2 -name style.css)
+
+          cd wp
+          wp theme activate "${{ steps.detect.outputs.theme_slug }}"
+          wp rewrite structure '/%postname%/' --hard
+          wp rewrite flush --hard
+
+      - name: Start WordPress server
+        if: steps.detect.outputs.mode == 'wordpress'
+        shell: bash
+        run: |
+          cd wp
+          wp server --host=0.0.0.0 --port=8080 >/tmp/wp-server.log 2>&1 &
+
+      # ---------- Plain PHP mode ----------
+      - name: Start PHP server
+        if: steps.detect.outputs.mode == 'php'
+        shell: bash
+        run: |
+          set -e
+          DOCROOT="_template"
+          for d in public www htdocs; do
+            if [ -d "_template/$d" ] && [ -f "_template/$d/index.php" -o -f "_template/$d/index.html" ]; then
+              DOCROOT="_template/$d"; break
+            fi
+          done
+          echo "Serving $DOCROOT"
+          php -S 0.0.0.0:8080 -t "$DOCROOT" >/tmp/php-server.log 2>&1 &
+
+      # ---------- Crawl to static snapshot (both modes) ----------
+      - name: Crawl to static HTML
+        shell: bash
+        run: |
+          set -e
+          echo "Waiting for the server to respond..."
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8080/ >/dev/null; then echo "up."; break; fi
+            sleep 2
+          done
+
+          mkdir -p _site
+          wget \
+            --mirror --convert-links --adjust-extension --page-requisites \
+            --no-host-directories --no-parent -e robots=off \
+            --reject-regex '(wp-json|wp-login|xmlrpc|/feed|trackback|/comments/)' \
+            -P _site \
+            http://localhost:8080/ || true
+
+          touch _site/.nojekyll
+          echo "----- snapshot contents -----"
+          ls -R _site | head -50
+
+      - name: Publish to gh-pages gallery
+        uses: ./.github/actions/publish-to-gh-pages
+        with:
+          branch: ${{ inputs.branch }}
+          source-dir: _site
+          token: ${{ github.token }}
