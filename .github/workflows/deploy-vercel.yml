@@ -1,0 +1,68 @@
+name: Deploy to Vercel
+
+# Manual deploy of any template branch to Vercel for a shareable preview URL.
+# Requires repo secrets: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID.
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Template branch to deploy (e.g. portfolio)"
+        required: true
+        type: string
+      production:
+        description: "Promote to production (otherwise a preview URL)"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Check secrets are configured
+        shell: bash
+        run: |
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "::error::Missing Vercel secrets. Add VERCEL_TOKEN, VERCEL_ORG_ID and VERCEL_PROJECT_ID in repo Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+      - name: Checkout template branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=${{ inputs.production == true && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build
+        run: vercel build ${{ inputs.production == true && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy
+        id: deploy
+        shell: bash
+        run: |
+          URL=$(vercel deploy --prebuilt ${{ inputs.production == true && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Summary
+        shell: bash
+        run: |
+          echo "### Deployed to Vercel :rocket:" >> "$GITHUB_STEP_SUMMARY"
+          echo "Template **${{ inputs.branch }}** — ${{ inputs.production == true && 'production' || 'preview' }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**URL:** ${{ steps.deploy.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
