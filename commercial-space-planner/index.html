@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Plot — 3D Commercial Space Planner</title>
+  <meta name="description" content="Lay out cafés, co-working offices and boutique retail in 3D. Plan capacity, apply your brand colour, estimate cost, and export to PDF." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+</head>
+<body>
+
+  <!-- ============================ HERO ============================ -->
+  <header class="hero" id="top">
+    <nav class="nav">
+      <a class="brand-logo" href="#top">
+        <span class="logo-mark"></span> Plot
+      </a>
+      <div class="nav-links">
+        <a href="#templates">Templates</a>
+        <a href="#features">Features</a>
+        <a class="btn btn-ghost" href="#planner">Open planner</a>
+      </div>
+    </nav>
+
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <span class="eyebrow">For cafés · offices · boutiques</span>
+        <h1>Design the room before you build it.</h1>
+        <p>Drag furniture, fixtures and counters onto a real floor plan, swing into
+          a 3D view, check capacity and fire egress, paint it in your brand colour,
+          and walk away with a costed layout sheet.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#planner" data-launch="cafe">Lay out a coffee shop →</a>
+          <a class="btn btn-ghost" href="#templates">Browse templates</a>
+        </div>
+        <div class="hero-stats">
+          <div><strong>4</strong><span>starter templates</span></div>
+          <div><strong>2D + 3D</strong><span>side by side</span></div>
+          <div><strong>Live</strong><span>capacity &amp; cost</span></div>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="hero-card hero-plan">
+          <span class="hero-card-tag">Floor plan</span>
+        </div>
+        <div class="hero-card hero-3d">
+          <span class="hero-card-tag">3D view</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================== PLANNER ========================== -->
+  <main id="planner" class="workspace">
+
+    <!-- Top toolbar -->
+    <div class="topbar">
+      <div class="topbar-group">
+        <span class="topbar-title">Untitled space</span>
+        <div class="seg" role="tablist" aria-label="View">
+          <button class="seg-btn is-active" data-view="plan">Floor plan</button>
+          <button class="seg-btn" data-view="3d">3D view</button>
+        </div>
+      </div>
+
+      <div class="topbar-group">
+        <label class="switch" title="Animate fire-egress paths">
+          <input type="checkbox" id="fireToggle" />
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+          <span class="switch-label">Show fire safety</span>
+        </label>
+
+        <div class="brandpick" title="Brand colour">
+          <span class="brandpick-label">Brand</span>
+          <div class="swatches" id="swatches"></div>
+          <input type="color" id="brandColor" value="#e0654f" aria-label="Pick brand colour" />
+        </div>
+
+        <button class="btn btn-ghost" id="costToggle">Cost ▸</button>
+        <button class="btn btn-primary" id="exportBtn">Export PDF</button>
+      </div>
+    </div>
+
+    <div class="stage">
+      <!-- Left tool rail -->
+      <aside class="rail">
+        <div class="rail-section">
+          <h3>Templates</h3>
+          <div class="template-grid" id="templateGrid"></div>
+        </div>
+
+        <div class="rail-section">
+          <h3>Tools</h3>
+          <div class="tool-row">
+            <button class="tool is-active" data-tool="select" title="Select / move (V)">
+              <svg viewBox="0 0 24 24"><path d="M5 3l14 7-6 2-2 6z"/></svg><span>Select</span>
+            </button>
+            <button class="tool" id="rotateBtn" title="Rotate selected (R)">
+              <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 1 2.3 5.6M4 12V7m0 5h5" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Rotate</span>
+            </button>
+            <button class="tool" id="deleteBtn" title="Delete selected (Del)">
+              <svg viewBox="0 0 24 24"><path d="M6 7h12M9 7V5h6v2m-8 0l1 13h8l1-13" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Delete</span>
+            </button>
+            <button class="tool" id="clearBtn" title="Clear room">
+              <svg viewBox="0 0 24 24"><path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Clear</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="rail-section rail-catalog">
+          <h3>Furniture &amp; fixtures</h3>
+          <div class="cat-tabs" id="catTabs"></div>
+          <div class="catalog" id="catalog"></div>
+        </div>
+
+        <div class="rail-section">
+          <h3>Room</h3>
+          <div class="room-size">
+            <label>Width <input type="number" id="roomW" min="3" max="20" step="0.5" value="9" /> m</label>
+            <label>Depth <input type="number" id="roomD" min="3" max="20" step="0.5" value="7" /> m</label>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 3D / plan canvas -->
+      <section class="viewport">
+        <canvas id="scene"></canvas>
+        <div class="vp-hint" id="vpHint">Pick a fixture on the left, then click the floor to place it.</div>
+        <div class="vp-badge" id="viewBadge">Floor plan</div>
+        <div class="egress-legend" id="egressLegend">
+          <span class="dot"></span> Fire-egress paths to nearest exit
+        </div>
+      </section>
+
+      <!-- Right capacity panel -->
+      <aside class="inspector">
+        <div class="panel">
+          <h3>Capacity planner</h3>
+          <div class="meter">
+            <div class="meter-head">
+              <span id="meterUse">Café · assembly</span>
+              <span id="meterStatus" class="pill pill-ok">OK</span>
+            </div>
+            <div class="meter-bar"><div class="meter-fill" id="meterFill"></div></div>
+            <div class="meter-scale"><span>0</span><span id="meterMax">max</span></div>
+          </div>
+          <ul class="stat-list">
+            <li><span>Seats placed</span><strong id="statSeats">0</strong></li>
+            <li><span>Floor area</span><strong id="statArea">0 m²</strong></li>
+            <li><span>Density</span><strong id="statDensity">0 / m²</strong></li>
+            <li><span>Recommended max</span><strong id="statMax">0</strong></li>
+            <li><span>Exits placed</span><strong id="statExits">0</strong></li>
+          </ul>
+          <p class="hint" id="capacityNote">Place an exit door from the “Common” tab to validate egress.</p>
+        </div>
+
+        <div class="panel">
+          <h3>Selected</h3>
+          <div id="selInfo" class="sel-empty">Nothing selected.</div>
+        </div>
+      </aside>
+
+      <!-- Cost estimator slide-out -->
+      <aside class="cost-panel" id="costPanel" aria-hidden="true">
+        <div class="cost-head">
+          <h3>Cost estimate</h3>
+          <button class="icon-btn" id="costClose" aria-label="Close">✕</button>
+        </div>
+        <div class="cost-body" id="costBody"></div>
+        <div class="cost-total">
+          <span>Estimated total</span>
+          <strong id="costTotal">$0</strong>
+        </div>
+        <p class="hint">Rough fit-out estimate — furniture &amp; fixtures only, excludes build &amp; install.</p>
+      </aside>
+    </div>
+  </main>
+
+  <!-- ===================== TEMPLATES SECTION ===================== -->
+  <section id="templates" class="marketing">
+    <div class="section-head">
+      <span class="eyebrow">Start fast</span>
+      <h2>Four ready-made layouts</h2>
+      <p>Load a template, then make it yours. Each one comes pre-populated with
+        fixtures, exits and a sensible capacity target.</p>
+    </div>
+    <div class="cards" id="templateCards"></div>
+  </section>
+
+  <!-- ===================== FEATURES SECTION ====================== -->
+  <section id="features" class="marketing alt">
+    <div class="section-head">
+      <span class="eyebrow">Built for operators</span>
+      <h2>Everything you need to brief a build</h2>
+    </div>
+    <div class="feature-grid">
+      <article><h4>Plan ⇄ 3D</h4><p>Swing between a measured top-down plan and a perspective walk-around with one click.</p></article>
+      <article><h4>Brand colour</h4><p>Pick a colour and watch counters, booths and signage recolour across the whole room instantly.</p></article>
+      <article><h4>Capacity &amp; egress</h4><p>Seats-per-square-metre ticks live as you place chairs; toggle animated fire-egress paths.</p></article>
+      <article><h4>Cost estimator</h4><p>A running fit-out total updates with every fixture you drop in.</p></article>
+      <article><h4>PDF layout sheet</h4><p>Export a build-ready sheet with the plan, capacity figures and a costed bill of fixtures.</p></article>
+      <article><h4>Real units</h4><p>Everything is modelled in metres so the plan matches the site survey.</p></article>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <span>Plot — 3D commercial space planner</span>
+    <a href="#planner">Open the planner →</a>
+  </footer>
+
+  <!-- Export building-up overlay -->
+  <div class="export-overlay" id="exportOverlay" aria-hidden="true">
+    <div class="sheet" id="exportSheet">
+      <div class="sheet-block titleblock">
+        <div>
+          <h2 id="sheetTitle">Café layout</h2>
+          <span id="sheetMeta">Floor plan · 9.0 × 7.0 m</span>
+        </div>
+        <div class="sheet-logo"><span class="logo-mark"></span> Plot</div>
+      </div>
+      <div class="sheet-block sheet-plan"><img id="sheetImg" alt="Layout snapshot" /></div>
+      <div class="sheet-block sheet-stats" id="sheetStats"></div>
+      <div class="sheet-block sheet-cost" id="sheetCost"></div>
+      <div class="sheet-status" id="sheetStatus">Assembling layout sheet…</div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
