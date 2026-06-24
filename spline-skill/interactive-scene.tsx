@@ -6,7 +6,7 @@
 
 import { useRef, useState, useCallback } from 'react';
 import Spline from '@splinetool/react-spline';
-import type { Application } from '@splinetool/runtime';
+import type { Application, SplineEvent } from '@splinetool/runtime';
 
 const SCENE_URL = 'https://prod.spline.design/REPLACE_ME/scene.splinecode';
 
@@ -23,12 +23,12 @@ export default function InteractiveScene() {
   }
 
   // --- Listen to events from inside the Spline scene ---
-  function onMouseDown(e: any) {
+  function onMouseDown(e: SplineEvent) {
     setLastEvent(`mouseDown on: ${e.target?.name}`);
     console.log('mouseDown event:', e.target);
   }
 
-  function onMouseHover(e: any) {
+  function onMouseHover(e: SplineEvent) {
     setLastEvent(`mouseHover on: ${e.target?.name}`);
   }
 

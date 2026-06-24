@@ -42,12 +42,8 @@ export default function SplineBackground({
 }: SplineBackgroundProps) {
   const [splineLoaded, setSplineLoaded] = useState(false);
   const [splineFailed, setSplineFailed] = useState(false);
-  const [canLoad, setCanLoad] = useState(false);
+  const [canLoad] = useState(() => shouldLoadSpline(mobileBreakpoint));
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
-
-  useEffect(() => {
-    setCanLoad(shouldLoadSpline(mobileBreakpoint));
-  }, [mobileBreakpoint]);
 
   useEffect(() => {
     if (!canLoad) return;
