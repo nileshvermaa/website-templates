@@ -6,32 +6,32 @@ brand
 
 ## Users
 
-Startup founders, QA leads, engineering managers, and product teams evaluating an AI testing platform from a public landing page. They need to quickly understand what Bugster does, trust that it is production-ready, and find a clear path to start testing or contact the team.
+Business owners, founders, creators, and social media managers who need polished Instagram content without hiring a long-retainer agency or building every asset themselves.
 
 ## Product Purpose
 
-This branch is a live, component-built React recreation of the Bugster marketing site for shareable GitHub Pages previews. Success means the page feels like a real interactive website rather than a screenshot: clickable actions, polished motion, responsive sections, readable hierarchy, and a visual system close to the Bugster reference.
+This branch is a live React recreation of the Content on Demand landing page for shareable GitHub Pages previews. Success means the page feels like a functional website: anchored navigation, pricing CTA, modal walkthrough, FAQ accordion, newsletter form, responsive image-led composition, and motion that matches the reference site without falling back to screenshots.
 
 ## Brand Personality
 
-Playful, technical, confident. The interface should feel approachable and energetic while still convincing technical buyers that the product handles serious QA automation work.
+Editorial, cheeky, fast-moving, and premium. The experience should feel like a fashion/content studio selling a compact creative sprint rather than a generic SaaS product.
 
 ## Anti-references
 
-Do not ship screenshot-slice pages, static mockups, generic SaaS cards, purple-gradient AI styling, or animation that feels bolted on. Avoid overly soft glass cards, oversized rounded panels, and bland white sections that lose the Bugster character.
+Avoid generic SaaS cards, AI-tool purple gradients, screenshot-only pages, soft beige template layouts, and polite agency minimalism. Do not replace the reference's oversized image crop, black-and-white logo treatment, bright promo strip, or bold dark footer with neutral boilerplate.
 
 ## Design Principles
 
-Show the agent doing work through motion, browser states, and progressive feedback.
+Lead with imagery because the service sells visual taste.
 
-Keep the mascot and chunky UI details as brand assets, not decoration.
+Keep the offer brutally clear: 12 posts, 7 days, no retainer.
 
-Use strong borders, precise spacing, and high-contrast copy so the playful style still feels production-grade.
+Make the page feel purchasable with real CTAs, FAQ states, and form feedback.
 
-Make every CTA and interactive region behave like a real site element.
+Use high-contrast editorial typography and intentional cropping to preserve the reference energy.
 
-Preserve performance and accessibility with reduced-motion fallbacks.
+Respect reduced motion while keeping marquee and image float motion for users who allow it.
 
 ## Accessibility & Inclusion
 
-Target WCAG AA contrast for text and controls. Support keyboard navigation, visible focus states, and `prefers-reduced-motion` fallbacks for continuous marquee, mascot, reveal, and browser-agent animations.
+Target WCAG AA contrast, keyboard-reachable controls, visible focus states, semantic sections, labeled form controls, and reduced-motion fallbacks.

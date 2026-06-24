@@ -1,19 +1,19 @@
-# Bugtester Dev
+# Content on Demand
 
-Live React recreation of the supplied Bugster-style landing page reference.
+Live React recreation of the Content on Demand landing page reference.
 
 ## Approach
 
-The PDF was used as visual reference. The site is rebuilt as real HTML/CSS/React
-components with clickable buttons, navigation, pricing CTAs, tabs, FAQ accordion,
-and SVG mascot-style illustrations.
+The live Framer site was used as visual reference. The page is rebuilt as real
+HTML/CSS/React components with anchor navigation, pricing CTA, modal walkthrough,
+FAQ accordion, newsletter form, image marquee, and responsive cropped imagery.
 
 ## Stack
 
 - React 19
 - Vite
 - TypeScript
-- Component-built landing page with CSS/SVG illustrations
+- Component-built landing page with external Framer-hosted image/font assets
 
 ## Commands
 
@@ -25,4 +25,4 @@ npm run lint
 ```
 
 The app uses `base: './'` so it works at the GitHub Pages subpath
-`/website-templates/bugtester-dev/`.
+`/website-templates/content-on-demand/`.
