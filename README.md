@@ -1,31 +1,20 @@
-# Calculus Atlas
+# Bugtester Dev
 
-Interactive React web app for visualizing derivatives, integrals, and limits.
+Screenshot-faithful React recreation of the supplied Bugster-style landing page
+reference.
 
-## Concept
+## Approach
 
-Calculus Atlas is a rigorous, beautiful, exam-ready visualization site. It uses
-pure illustrated graphs, KaTeX-rendered formulas, and interactive SVG plotting
-tools instead of photography or static diagrams.
-
-## Features
-
-- Hero tangent line sweeping along `sin(x)` with adjustable speed.
-- Derivatives lab: drag a point on `f(x)` and see the tangent slope update live.
-- Side-by-side function and derivative views.
-- Integrals lab: Riemann rectangles animate as the partition slider changes.
-- Limits lab: epsilon-delta proof window with snapping delta and confirmation flash.
-- Hoverable formula terms with definition popovers.
-- Step-through proof practice controlled by button or `N` / right-arrow key.
-- Plot areas support wheel zoom and drag pan with a cursor-anchored math grid.
+The PDF contains full embedded screenshot slices. To preserve the exact visual
+language as requested, this branch extracts and reuses those slices in the live
+React page while adding lightweight navigation and accessibility labels.
 
 ## Stack
 
-- React 19 + TypeScript
+- React 19
 - Vite
-- SVG-based custom plotting
-- KaTeX for math rendering
-- CSS graph-paper design system
+- TypeScript
+- Extracted reference JPEG assets in `public/bugster-reference/`
 
 ## Commands
 
@@ -36,5 +25,5 @@ npm run build
 npm run lint
 ```
 
-`vite.config.ts` uses `base: './'` so this site works when deployed under the
-GitHub Pages branch folder `/website-templates/calculus-visualizer/`.
+The app uses `base: './'` so it works at the GitHub Pages subpath
+`/website-templates/bugtester-dev/`.

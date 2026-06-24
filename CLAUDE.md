@@ -1,45 +1,26 @@
-# CLAUDE.md - `calculus-visualizer`
+# CLAUDE.md - `bugtester-dev`
 
-This branch contains **Calculus Atlas**, a React and TypeScript web app for
-interactive calculus visualization.
+This branch is a screenshot-faithful React recreation of a Bugster-style landing
+page supplied as a PDF.
 
-## Product Direction
+## Implementation
 
-- Visualize derivatives, integrals, and limits through pure illustrated math.
-- Avoid photography; use graph-paper, curves, tangent lines, Riemann rectangles,
-  epsilon-delta bands, and proof cards.
-- Vibe: rigorous, beautiful, intuitive, exam-ready.
-
-## Stack
-
-- React 19 + TypeScript
-- Vite
-- KaTeX
-- Custom SVG plotting
-- Vanilla CSS in `src/styles.css`
-
-## File Map
-
-| File | Role |
-| --- | --- |
-| `src/App.tsx` | All interactive calculus components and graph helpers |
-| `src/styles.css` | Navy/paper graph-paper design system |
-| `src/main.tsx` | React entry and KaTeX CSS import |
-| `vite.config.ts` | Vite config with relative `base` for Pages subfolders |
+- The PDF contained full embedded screenshot images.
+- Four extracted slices are stored in `public/bugster-reference/`.
+- `src/App.tsx` renders those slices in order with anchor navigation.
+- `src/styles.css` handles page framing, sticky quick nav, and accessibility.
 
 ## Commands
 
 ```sh
 npm install
-npm run dev
 npm run build
 npm run lint
 ```
 
-## Extension Notes
+## Notes
 
-- Keep graph interactions SVG-based unless a future feature needs WebGL.
-- Preserve cursor-anchored zoom and drag-pan behavior for plot surfaces.
-- Add new math labs as separate sections inside `src/App.tsx` or split into
-  components once the app grows further.
-- KaTeX formula popovers are implemented through the `MathTerm` component.
+- This is intentionally image-faithful rather than component-rebuilt, because the
+  user requested the closest possible match including colors, fonts, and images.
+- If the design later needs editable HTML sections, use these slices as the visual
+  reference and rebuild section-by-section with semantic components.

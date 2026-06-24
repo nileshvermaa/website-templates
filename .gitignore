@@ -1,5 +1,6 @@
 node_modules/
 .vite/
+.analysis/
 .DS_Store
 dist/
 build/
@@ -8,3 +9,4 @@ out/
 *.log
 .env
 .env.local
+screencapture-bugster-dev-2026-06-24-18_29_18.pdf
