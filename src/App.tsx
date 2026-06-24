@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const logos = ['500', 'gigstack', 'nexcar', 'JetsMART', 'TrueState', 'Dapta.', 'sent']
 
@@ -124,7 +124,9 @@ function Hero() {
       </section>
       <section className="trust">
         <p>They trust in Bugster</p>
-        <div>{logos.map((logo) => <span key={logo}>{logo}</span>)}</div>
+        <div className="logo-marquee">
+          <div>{[...logos, ...logos].map((logo, index) => <span key={`${logo}-${index}`}>{logo}</span>)}</div>
+        </div>
       </section>
     </header>
   )
@@ -139,6 +141,13 @@ function BrowserDemo() {
         <div className="left-pane">
           <strong>✣ New Test</strong>
           <div className="prompt">Describe a user flow to test... <button>Run</button></div>
+          <ol className="agent-steps">
+            <li>Navigating to Amazon and reading the page.</li>
+            <li>Typing “1984” into the search bar.</li>
+            <li>Opening the first hardcover result.</li>
+            <li>Adding the book to cart.</li>
+            <li>Test passed.</li>
+          </ol>
         </div>
         <div className="right-pane">
           <div className="browser-bar"><span className="dot red" /><span className="dot yellow" /><span className="dot green" /> https://www.amazon.com</div>
@@ -283,7 +292,9 @@ function FaqCtaFooter() {
               <button onClick={() => setOpen(open === index ? -1 : index)}>
                 {question}<span>{open === index ? '⌃' : '⌄'}</span>
               </button>
-              {open === index && <p>{answer}</p>}
+              <div className="faq-answer" aria-hidden={open !== index}>
+                <p>{answer}</p>
+              </div>
             </article>
           ))}
         </div>
@@ -312,6 +323,8 @@ function FaqCtaFooter() {
 }
 
 function App() {
+  useRevealOnScroll()
+
   return (
     <>
       <Hero />
@@ -329,3 +342,27 @@ function App() {
 }
 
 export default App
+
+function useRevealOnScroll() {
+  const initialized = useRef(false)
+
+  useEffect(() => {
+    if (initialized.current) return
+    initialized.current = true
+
+    const targets = document.querySelectorAll('.section, .hero-card, .trust, .testimonial, .join, .footer')
+    targets.forEach((target) => target.classList.add('reveal'))
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible')
+          observer.unobserve(entry.target)
+        }
+      })
+    }, { threshold: 0.16 })
+
+    targets.forEach((target) => observer.observe(target))
+    return () => observer.disconnect()
+  }, [])
+}
