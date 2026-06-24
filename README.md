@@ -1,20 +1,19 @@
 # Bugtester Dev
 
-Screenshot-faithful React recreation of the supplied Bugster-style landing page
-reference.
+Live React recreation of the supplied Bugster-style landing page reference.
 
 ## Approach
 
-The PDF contains full embedded screenshot slices. To preserve the exact visual
-language as requested, this branch extracts and reuses those slices in the live
-React page while adding lightweight navigation and accessibility labels.
+The PDF was used as visual reference. The site is rebuilt as real HTML/CSS/React
+components with clickable buttons, navigation, pricing CTAs, tabs, FAQ accordion,
+and SVG mascot-style illustrations.
 
 ## Stack
 
 - React 19
 - Vite
 - TypeScript
-- Extracted reference JPEG assets in `public/bugster-reference/`
+- Component-built landing page with CSS/SVG illustrations
 
 ## Commands
 
