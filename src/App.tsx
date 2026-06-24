@@ -1,20 +1,28 @@
 import { useEffect, useRef, useState } from 'react'
 
-const logos = ['500', 'gigstack', 'nexcar', 'JetsMART', 'TrueState', 'Dapta.', 'sent']
+const logos = ['500', 'gigstack', 'nexcar', 'JetsMART', 'TrueState', 'Makinari', 'Dapta.', 'Sento']
+
+const agentSteps = [
+  'Navigating to Amazon and taking a snapshot to understand the page.',
+  'Typing "1984" into the search bar and submitting the query.',
+  'Opening the first hardcover result from the search grid.',
+  'Clicking "Add to Cart" and waiting for confirmation.',
+  'Confirmation modal displayed. Test passed.',
+]
 
 const workflowCards = [
   {
-    icon: '</>',
+    icon: 'DEV',
     title: 'For developers',
     bullets: [
       'bugster pull to sync tests locally as YAML',
       'Create and edit tests in Cursor or Claude Code',
       'bugster push to sync back to the platform',
-      'Run tests and add quick checks from the CLI',
+      'Run quick natural-language checks from the CLI',
     ],
   },
   {
-    icon: '✣',
+    icon: 'QA',
     title: 'For QA & product teams',
     bullets: [
       'Create tests in the web app using natural language',
@@ -23,19 +31,33 @@ const workflowCards = [
     ],
   },
   {
-    icon: '▷',
+    icon: 'RUN',
     title: 'Run anywhere',
     bullets: ['Trigger on CI/CD, schedule nightly runs, or run across environments from one place.'],
   },
   {
-    icon: '⌘',
+    icon: 'FIX',
     title: 'Fix everything',
     bullets: ['Get detailed bug reports, reproduction steps, and video recordings of every failure.'],
   },
 ]
 
-const integrations = [
-  ['Vercel', '▲'], ['Railway', '◒'], ['Netlify', '✣'], ['GCP', '☁'], ['Custom', '⬡'], ['More', '•••'],
+const integrationGroups = [
+  {
+    title: 'Deploy Platforms',
+    copy: 'Deploy and run tests across multiple platforms',
+    items: ['Vercel', 'Railway', 'Netlify', 'GCP', 'Custom', 'More'],
+  },
+  {
+    title: 'Git Providers',
+    copy: 'Connect your repository for automated testing on every commit',
+    items: ['GitHub', 'Gitlab', 'Bitbucket', 'More'],
+  },
+  {
+    title: 'Notifications',
+    copy: 'Get alerts when tests fail, wherever your team lives',
+    items: ['Slack', 'Email', 'Discord', 'Teams', 'Webhook', 'More'],
+  },
 ]
 
 const faqs = [
@@ -52,9 +74,13 @@ function Logo() {
   return (
     <a className="logo" href="#top" aria-label="Bugster home">
       <span className="logo-mark" />
-      Bugster
+      <span>Bugster</span>
     </a>
   )
+}
+
+function Arrow() {
+  return <span className="arrow-glyph" aria-hidden="true">-&gt;</span>
 }
 
 function Chameleon({ variant = 'hero' }: { variant?: 'hero' | 'laptop' | 'team' | 'footer' }) {
@@ -92,39 +118,61 @@ function Chameleon({ variant = 'hero' }: { variant?: 'hero' | 'laptop' | 'team' 
 }
 
 function Hero() {
+  const [communityOpen, setCommunityOpen] = useState(false)
+
   return (
     <header className="hero" id="top">
-      <nav className="nav">
+      <div className="announcement">
+        <span>A letter to our users, customers and friends</span>
+        <a href="#faq">Read more <Arrow /></a>
+      </div>
+      <nav className="nav" aria-label="Primary navigation">
         <Logo />
         <div className="nav-links">
           <a href="#home">Home</a>
           <a href="#business">Business</a>
           <a href="#pricing">Pricing</a>
           <a href="#docs">Docs</a>
-          <a href="#community">Community⌄</a>
+          <div className="nav-menu">
+            <button
+              type="button"
+              aria-expanded={communityOpen}
+              onClick={() => setCommunityOpen((open) => !open)}
+            >
+              Community <span aria-hidden="true">v</span>
+            </button>
+            <div className="nav-popover" data-open={communityOpen}>
+              <a href="#docs"><strong>Documentation</strong><span>Guides and tutorials</span></a>
+              <a href="#community"><strong>Discord</strong><span>Join the product community</span></a>
+              <a href="#join"><strong>Newsletter</strong><span>Updates and launch notes</span></a>
+            </div>
+          </div>
         </div>
         <div className="nav-actions">
           <button className="btn ghost" onClick={() => alert('Login flow would open here.')}>Log in</button>
-          <a className="btn lime" href="#join">Start testing →</a>
+          <a className="btn lime" href="#join">Start testing <Arrow /></a>
         </div>
       </nav>
-      <div className="announcement">
-        <span>A letter to our users, customers and friends</span>
-        <a href="#faq">Read more →</a>
-      </div>
       <section className="hero-card">
         <div className="hero-copy">
+          <span className="hero-kicker">AI-powered QA automation</span>
           <h1>Empower your QA with AI testing</h1>
           <p>AI-powered testing that supercharges your QA. Match engineering speed and ship with confidence.</p>
-          <a className="btn lime" href="#join">Start testing →</a>
-          <p className="micro">Want to learn more? <a href="#join">Contact us</a></p>
+          <div className="hero-actions">
+            <a className="btn lime" href="#join">Start testing <Arrow /></a>
+            <a className="text-link" href="#join">Contact us</a>
+          </div>
         </div>
-        <Chameleon />
+        <div className="hero-visual">
+          <Chameleon />
+          <div className="floating-chip chip-one">Live browser</div>
+          <div className="floating-chip chip-two">No selectors</div>
+        </div>
         <span className="fold" />
       </section>
       <section className="trust">
-        <p>They trust in Bugster</p>
-        <div className="logo-marquee">
+        <h2>They trust in Bugster</h2>
+        <div className="logo-marquee" aria-label="Customer logos">
           <div>{[...logos, ...logos].map((logo, index) => <span key={`${logo}-${index}`}>{logo}</span>)}</div>
         </div>
       </section>
@@ -134,23 +182,29 @@ function Hero() {
 
 function BrowserDemo() {
   return (
-    <section className="section white" id="home">
+    <section className="section white browser-section" id="home">
       <h2><span className="corner-square" />AI agents test your app on real browsers</h2>
       <p>No scripts. No selectors. Just describe what to test and watch the agent click, type, and navigate like a real user.</p>
       <div className="browser">
         <div className="left-pane">
-          <strong>✣ New Test</strong>
+          <div className="pane-title"><span className="small-bug" /> New Test</div>
           <div className="prompt">Describe a user flow to test... <button>Run</button></div>
+          <div className="run-status"><span>Step 0/5</span><strong>Agent Thoughts</strong></div>
           <ol className="agent-steps">
-            <li>Navigating to Amazon and reading the page.</li>
-            <li>Typing “1984” into the search bar.</li>
-            <li>Opening the first hardcover result.</li>
-            <li>Adding the book to cart.</li>
-            <li>Test passed.</li>
+            {agentSteps.map((step) => <li key={step}>{step}</li>)}
           </ol>
         </div>
         <div className="right-pane">
           <div className="browser-bar"><span className="dot red" /><span className="dot yellow" /><span className="dot green" /> https://www.amazon.com</div>
+          <div className="mock-store">
+            <div className="mock-search"><span>1984</span><i /></div>
+            <div className="mock-grid">
+              <span /><span /><span /><span />
+            </div>
+            <button className="mock-cart">Add to Cart</button>
+            <span className="agent-cursor">AI</span>
+          </div>
+          <span className="live-badge">Live</span>
         </div>
       </div>
     </section>
@@ -164,13 +218,13 @@ function TeamSection() {
       <h2>Built for every engineering team</h2>
       <div className="team-panel">
         <div className="tabs"><button>QA Engineers</button><span>Engineering Leaders</span><span>Developers</span></div>
-        <div className="metric"><strong>10x</strong><span>more test coverage</span></div>
-        <div className="metric"><strong>&lt; 5 min</strong><span>to generate a full suite</span></div>
-        <div className="metric"><strong>Zero</strong><span>coding required</span></div>
+        <div className="metric"><strong>10x</strong><span>more test coverage compared to manual testing</span></div>
+        <div className="metric"><strong>&lt; 5 min</strong><span>to generate a full suite for any web application</span></div>
+        <div className="metric"><strong>Zero</strong><span>coding required, plain-English test specs</span></div>
         <div className="panel-cta">
           <h3>Stop clicking. Start owning quality at scale.</h3>
-          <p>Use plain English to describe flows, and let AI agents generate and execute E2E tests automatically.</p>
-          <a className="btn lime" href="#join">Get started for free →</a>
+          <p>Use plain English to describe flows, and let AI agents generate and execute end-to-end tests automatically.</p>
+          <a className="btn lime" href="#join">Get started for free <Arrow /></a>
         </div>
       </div>
     </section>
@@ -206,14 +260,14 @@ function Stack() {
         <Chameleon variant="laptop" />
       </div>
       <div className="integration-panel">
-        {['Deploy Platforms', 'Git Providers', 'Notifications'].map((title, index) => (
-          <div className="integration-row" key={title}>
-            <h3>{title}</h3>
-            <p>{index === 0 ? 'Deploy and run tests across multiple platforms' : index === 1 ? 'Connect your repository for automated testing' : 'Get alerts wherever your team lives'}</p>
+        {integrationGroups.map((group) => (
+          <div className="integration-row" key={group.title}>
+            <h3>{group.title}</h3>
+            <p>{group.copy}</p>
             <div className="integration-icons">
-              {integrations.slice(0, index === 1 ? 4 : 6).map(([name, icon]) => (
-                <button key={`${title}-${name}`} onClick={() => alert(`${name} integration selected`)}>
-                  <span>{icon}</span>
+              {group.items.map((name) => (
+                <button key={`${group.title}-${name}`} onClick={() => alert(`${name} integration selected`)}>
+                  <span>{name.slice(0, 2).toUpperCase()}</span>
                   {name}
                 </button>
               ))}
@@ -236,13 +290,13 @@ function Pricing() {
           <div className="price-head"><h3>Starter</h3><strong>$0</strong></div>
           <p>Explore core testing with no setup</p>
           <ul><li>70 E2E test runs/month</li><li>Max 5 E2E tests per PR</li><li>Up to 3 tests in parallel</li><li>GitHub App + CLI integration</li></ul>
-          <a className="btn ghost wide" href="#join">Start Free ›</a>
+          <a className="btn ghost wide" href="#join">Start Free <Arrow /></a>
         </article>
-        <article>
+        <article className="featured-price">
           <div className="price-head"><h3>Team</h3><strong>Custom</strong></div>
           <p>For teams that need scale, control and support</p>
-          <ul><li>Custom E2E test runs volume</li><li>Custom Destructive Agent runs</li><li>Increased parallel execution</li><li>Priority support team</li><li>SLA guarantees</li></ul>
-          <a className="btn lime wide" href="#join">Contact Us ›</a>
+          <ul><li>Custom E2E test runs volume</li><li>Custom destructive agent runs</li><li>Increased parallel execution</li><li>Scheduled runs</li><li>Priority support team</li><li>SLA guarantees</li></ul>
+          <a className="btn lime wide" href="#join">Contact Us <Arrow /></a>
         </article>
       </div>
     </section>
@@ -254,24 +308,25 @@ function TestimonialsSecurity() {
     <>
       <section className="testimonial texture">
         <div className="cloud cloud-one" />
+        <div className="cloud cloud-two" />
         <h2>Loved by Engineering Teams</h2>
-        <p>Bugster is designed to streamline your workflow and elevate your process.</p>
-        <div className="stars">★★★★★</div>
-        <blockquote>“No test writing, real-browser proof in the PR. That&apos;s the confidence we needed.”</blockquote>
-        <span className="avatar">G</span>
-        <small>Guillermo Guadarrama<br />Founder At Nexcar</small>
-        <button className="arrow left">←</button><button className="arrow right">→</button>
+        <p>Bugster is designed to streamline your workflow and elevate your process. See what our community has to say.</p>
+        <div className="stars" aria-label="5 out of 5 stars">* * * * *</div>
+        <blockquote>&quot;Bugster saved us hours of time every day updating application tests. If you run UI tests, you need this product.&quot;</blockquote>
+        <span className="avatar">W</span>
+        <small>Will Ashford<br />Founder, Truestate</small>
+        <button className="arrow left" aria-label="Previous testimonial">&lt;</button><button className="arrow right" aria-label="Next testimonial">&gt;</button>
       </section>
       <section className="section white security">
         <div>
           <span className="pill-label">Security</span>
           <h2>Your data, handled with care</h2>
           <p>No shortcuts, no excuses. Your code and test data are protected by design, not by afterthought.</p>
-          <a href="#faq">Read our security practices →</a>
+          <a href="#faq">Read our security practices <Arrow /></a>
         </div>
         <div className="security-list">
           {['Encryption at rest & in transit', 'Zero training on your data', 'No code access'].map((item) => (
-            <article key={item}><span className="icon">▣</span><h3>{item}</h3><p>Your data is safeguarded with strict boundaries and clear processing terms.</p></article>
+            <article key={item}><span className="icon">OK</span><h3>{item}</h3><p>Your data is safeguarded with strict boundaries and clear processing terms.</p></article>
           ))}
         </div>
       </section>
@@ -289,8 +344,8 @@ function FaqCtaFooter() {
         <div className="faq-list">
           {faqs.map(([question, answer], index) => (
             <article key={question} className={open === index ? 'open' : ''}>
-              <button onClick={() => setOpen(open === index ? -1 : index)}>
-                {question}<span>{open === index ? '⌃' : '⌄'}</span>
+              <button onClick={() => setOpen(open === index ? -1 : index)} aria-expanded={open === index}>
+                {question}<span>{open === index ? '^' : 'v'}</span>
               </button>
               <div className="faq-answer" aria-hidden={open !== index}>
                 <p>{answer}</p>
@@ -301,11 +356,11 @@ function FaqCtaFooter() {
       </section>
       <section className="join white" id="join">
         <div className="window-card">
-          <div className="window-bar">— × □</div>
+          <div className="window-bar"><span /><span /><span /></div>
           <div>
             <h2>Join us today!</h2>
             <p>Start testing for free. No credit card required.</p>
-            <a className="btn lime" href="mailto:hello@example.com">Start testing →</a>
+            <a className="btn lime" href="mailto:hello@example.com">Start testing <Arrow /></a>
             <a className="btn ghost" href="mailto:hello@example.com">Contact us</a>
           </div>
           <Chameleon variant="team" />
@@ -316,7 +371,7 @@ function FaqCtaFooter() {
         <div><strong>Product</strong><a href="#join">Sign Up</a><a href="#pricing">Pricing</a><a href="#docs">Docs</a></div>
         <div><strong>Community</strong><a href="#community">Join Discord</a><a href="#join">Contact Us</a><a href="#faq">Newsletter</a></div>
         <Chameleon variant="footer" />
-        <p>© 2025 Bugster Inc. All rights reserved. <a href="#faq">Privacy Policy</a> <a href="#faq">Terms of Service</a></p>
+        <p>&copy; 2025 Bugster Inc. All rights reserved. <a href="#faq">Privacy Policy</a> <a href="#faq">Terms of Service</a></p>
       </footer>
     </>
   )
@@ -351,7 +406,6 @@ function useRevealOnScroll() {
     initialized.current = true
 
     const targets = document.querySelectorAll('.section, .hero-card, .trust, .testimonial, .join, .footer')
-    targets.forEach((target) => target.classList.add('reveal'))
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -360,7 +414,7 @@ function useRevealOnScroll() {
           observer.unobserve(entry.target)
         }
       })
-    }, { threshold: 0.16 })
+    }, { threshold: 0.14, rootMargin: '0px 0px -8% 0px' })
 
     targets.forEach((target) => observer.observe(target))
     return () => observer.disconnect()
