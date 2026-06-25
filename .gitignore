@@ -7,3 +7,16 @@ out/
 *.log
 .env
 .env.local
+
+# Next.js
+.next/
+next-env.d.ts
+*.tsbuildinfo
+
+# Local Claude settings (not project config)
+.claude/settings.local.json
+
+# Stray artifacts from other branches' working-tree state
+.analysis/
+.vite/
+*.pdf
