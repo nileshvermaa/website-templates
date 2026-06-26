@@ -7,9 +7,22 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
-  --font-heading: var(--font-sans);
+
+  /* ---- highnote.com brand tokens ---- */
+  --color-bone: #f5f3eb; /* page background */
+  --color-blackBG: #111111; /* footer */
+  --color-ash: #e2e0d6; /* icon chips / code header */
+  --color-yellow: #e1ff25; /* brand gradient stops */
+  --color-green: #55f5a3;
+  --color-blue: #3ff7ec;
+
+  --font-sans: var(--hn-text), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: var(--hn-display), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: var(--hn-mono), "SF Mono", "Fira Code", Menlo, monospace;
+  --font-heading: var(--font-display);
+
+  --radius-highnote: 8px; /* nav pills, chips */
+  --text-xxs: 0.625rem; /* 10px nav dropdown subtitles */
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -122,9 +135,223 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-bone text-black;
   }
   html {
     @apply font-sans;
   }
+}
+
+/* ===================================================================
+   highnote.com animations (keyframes extracted verbatim from source)
+   =================================================================== */
+
+/* Hero orb rings: rise in once, then drift forever */
+@keyframes orbRiseIn {
+  0% { opacity: 0; transform: translateY(var(--y, 60px)); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes orbDrift {
+  0% { translate: 0; }
+  25% { translate: var(--dx, 10px) var(--dy, -8px); }
+  50% { translate: calc(var(--dx, 10px) * -0.6) calc(var(--dy, -8px) * -0.8); }
+  75% { translate: calc(var(--dx, 10px) * 0.8) calc(var(--dy, -8px) * 0.5); }
+  100% { translate: 0; }
+}
+
+/* Hero headline rotating word */
+@keyframes rotateWord {
+  0% { opacity: 0; transform: translate(-50%, 80%); }
+  2% { opacity: 1; transform: translate(-50%, 0); }
+  15% { opacity: 1; transform: translate(-50%, 0); }
+  17.5% { opacity: 0; transform: translate(-50%, -40%); }
+  100% { opacity: 0; transform: translate(-50%, -40%); }
+}
+
+/* Logo marquee */
+@keyframes marquee {
+  0% { transform: translateZ(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes marqueeReverse {
+  0% { transform: translateZ(0); }
+  100% { transform: translateX(50%); }
+}
+
+/* Scroll-into-view entrance */
+@keyframes fadeup {
+  0% { opacity: 0; filter: blur(2px); transform: translateY(1rem); }
+  100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+
+/* Product-card ambient floating gradient blobs */
+@keyframes ambientDrift {
+  0% { transform: translate(0) scale(1) rotate(0deg); }
+  16% { transform: translate(55px, -40px) scale(1.3) rotate(12deg); }
+  33% { transform: translate(-30px, 30px) scale(0.82) rotate(-9deg); }
+  50% { transform: translate(40px, 20px) scale(1.22) rotate(6deg); }
+  66% { transform: translate(-45px, -20px) scale(0.88) rotate(-11deg); }
+  83% { transform: translate(20px, 45px) scale(1.25) rotate(5deg); }
+  100% { transform: translate(-15px, -30px) scale(1.1) rotate(-4deg); }
+}
+@keyframes ambientDriftAlt {
+  0% { transform: translate(0) scale(1) rotate(0deg); }
+  16% { transform: translate(40px, -50px) scale(1.25) rotate(10deg); }
+  33% { transform: translate(-35px, 25px) scale(0.85) rotate(-8deg); }
+  50% { transform: translate(30px, 30px) scale(1.2) rotate(5deg); }
+  66% { transform: translate(-40px, -15px) scale(0.9) rotate(-10deg); }
+  83% { transform: translate(25px, 40px) scale(1.15) rotate(7deg); }
+  100% { transform: translate(-20px, -25px) scale(1.05) rotate(-3deg); }
+}
+
+/* MoneyMovement vertical pill marquee */
+@keyframes scrollPills {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+/* Hero orb: each ring rises in (staggered) then drifts forever */
+.orb-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.orb-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation:
+    orbRiseIn 2.6s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+    orbDrift 26s ease-in-out 2.6s infinite;
+}
+.orb-ring-1 { --dx: 14px; --dy: -10px; animation-delay: 0s, 2.6s; animation-duration: 2.6s, 28s; }
+.orb-ring-2 { --dx: -12px; --dy: -14px; animation-delay: 0.1s, 2.7s; animation-duration: 2.6s, 24s; }
+.orb-ring-3 { --dx: 10px; --dy: 12px; animation-delay: 0.2s, 2.8s; animation-duration: 2.6s, 32s; }
+.orb-ring-4 { --dx: -16px; --dy: 8px; animation-delay: 0.3s, 2.9s; animation-duration: 2.6s, 22s; }
+.orb-ring-5 { --dx: 12px; --dy: -8px; animation-delay: 0.4s, 3s; animation-duration: 2.6s, 26s; }
+.orb-ring-6 { --dx: -10px; --dy: -12px; animation-delay: 0.45s, 3s; animation-duration: 2.6s, 30s; }
+.orb-ring-7 { --dx: 8px; --dy: 14px; animation-delay: 0.5s, 3.1s; animation-duration: 2.6s, 23s; }
+.orb-ring-8 { --dx: -14px; --dy: -6px; animation-delay: 0.55s, 3.2s; animation-duration: 2.6s, 27s; }
+.orb-ring-9 { --dx: 10px; --dy: 10px; animation-delay: 0.6s, 3.3s; animation-duration: 2.6s, 21s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .orb-ring { animation: none; }
+}
+
+/* Hero headline: one rotating word at a time, 6-word cycle */
+.hn-rotating-line {
+  position: relative;
+  display: inline-block;
+  height: 1.05em;
+  vertical-align: top;
+}
+.hn-rotating-line > .hn-word {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  opacity: 0;
+  animation: rotateWord 15s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+.hn-rotating-line > .hn-word-1 { animation-delay: 0s; }
+.hn-rotating-line > .hn-word-2 { animation-delay: 2.5s; }
+.hn-rotating-line > .hn-word-3 { animation-delay: 5s; }
+.hn-rotating-line > .hn-word-4 { animation-delay: 7.5s; }
+.hn-rotating-line > .hn-word-5 { animation-delay: 10s; }
+.hn-rotating-line > .hn-word-6 { animation-delay: 12.5s; }
+@media (prefers-reduced-motion: reduce) {
+  .hn-rotating-line > .hn-word { animation: none; }
+  .hn-word-6 { opacity: 1; }
+}
+
+/* Reusable animation utility classes */
+.animate-marquee { animation: marquee 38s linear infinite; }
+.animate-marquee-reverse { animation: marqueeReverse 38s linear infinite; }
+.animate-fadeup { animation: fadeup 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-scroll-pills { animation: scrollPills 18s linear infinite; }
+.animate-spin-slow { animation: spin 8s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee,
+  .animate-marquee-reverse,
+  .animate-fadeup,
+  .animate-scroll-pills,
+  .animate-spin-slow {
+    animation: none !important;
+  }
+}
+
+/* ===================================================================
+   highnote.com component classes
+   =================================================================== */
+
+/* Extra-small label text used in nav dropdowns */
+.text-xxs {
+  font-size: var(--text-xxs);
+  line-height: 0.875rem;
+}
+
+/* Hero / CTA pill buttons (arrow slides in on hover) */
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 0.625rem 2.5rem 0.625rem 1.5rem; /* room on the right for the arrow */
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 400;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.button-black-arrow {
+  background-color: #000;
+  color: #fff;
+}
+.button-black-arrow:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+}
+.button-white-arrow {
+  background-color: rgba(255, 255, 255, 0.85);
+  color: #000;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+.button-white-arrow:hover {
+  background-color: #fff;
+}
+.button-green-arrow {
+  background-color: #55f5a3;
+  color: #000;
+}
+.button-green-arrow:hover {
+  background-color: #3df193;
+}
+.button-ash-arrow {
+  background-color: #e2e0d6;
+  color: #000;
+}
+.button-ash-arrow:hover {
+  background-color: #d8d5c8;
+}
+
+/* Contact form labels and inputs */
+.formLabel {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+.baseInput {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--color-ash);
+  border-radius: var(--radius-highnote);
+  background-color: #fff;
+  outline: none;
+}
+.baseInput:focus {
+  border-color: rgba(0, 0, 0, 0.4);
 }

@@ -1,9 +1,27 @@
+import Hero from "@/components/Hero";
+import LogoBar from "@/components/LogoBar";
+import Products from "@/components/Products";
+import UnifiedPlatform from "@/components/UnifiedPlatform";
+import Industry from "@/components/Industry";
+import Customers from "@/components/Customers";
+import Developer from "@/components/Developer";
+import Insights from "@/components/Insights";
+import CTA from "@/components/CTA";
+import Footer from "@/components/Footer";
+
 export default function Home() {
   return (
-    <main className="flex min-h-screen items-center justify-center">
-      <p className="text-muted-foreground">
-        Clone target not yet built. Run <code className="font-mono text-foreground">/clone-website</code> to start.
-      </p>
-    </main>
+    <>
+      <Hero />
+      <LogoBar />
+      <Products />
+      <UnifiedPlatform />
+      <Industry />
+      <Customers />
+      <Developer />
+      <Insights />
+      <CTA />
+      <Footer />
+    </>
   );
 }
