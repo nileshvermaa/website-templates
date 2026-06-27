@@ -1,4 +1,4 @@
-# CLAUDE.md — `highnote-clone-full`
+# CLAUDE.md — `highnote`
 
 A modern reverse-engineering branch: **Next.js 16 + shadcn/ui + Tailwind v4**,
 carrying the `clone-website` skill ported from the `web-cloner` project. This is
@@ -26,11 +26,11 @@ parallel builder agents. See `AGENTS.md` and `docs/research/INSPECTION_GUIDE.md`
 
 ## GitHub Pages static export — the important difference vs. plain Next.js
 
-This branch deploys to `…/website-templates/highnote-clone-full/`, a sub-path, so
+This branch deploys to `…/website-templates/highnote/`, a sub-path, so
 `next.config.ts` is configured for a static export:
 
 - `output: "export"` → builds to **`out/`** (the deploy workflow auto-detects it).
-- `basePath` / `assetPrefix` = `/website-templates/highnote-clone-full` in
+- `basePath` / `assetPrefix` = `/website-templates/highnote` in
   **production only** (so `next dev` still serves at localhost root).
 - `images: { unoptimized: true }` — `next/image` optimization needs a server.
 - `trailingSlash: true` — emits `route/index.html` so deep links resolve on Pages.
@@ -56,8 +56,8 @@ npm run check      # lint + typecheck + build
 ## Deploying
 
 Actions tab → **Deploy to GitHub Pages (static / Node)** → run on branch
-`highnote-clone-full`. The workflow runs `npm ci`/`npm install` + `npm run build`,
-finds `out/`, and publishes to `gh-pages/highnote-clone-full/`.
+`highnote`. The workflow runs `npm ci`/`npm install` + `npm run build`,
+finds `out/`, and publishes to `gh-pages/highnote/`.
 
 ## Project structure
 

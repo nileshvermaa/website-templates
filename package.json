@@ -1,5 +1,5 @@
 {
-  "name": "highnote-clone-full",
+  "name": "highnote",
   "version": "0.1.0",
   "private": true,
   "description": "Next.js 16 + shadcn/ui + Tailwind v4 template, static-exported to the website-templates GitHub Pages gallery",

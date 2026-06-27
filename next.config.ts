@@ -5,7 +5,7 @@ import type { NextConfig } from "next";
 // so a static export with a per-branch base path is required. `next dev`
 // keeps serving at localhost root because the base path is prod-only.
 const repo = "website-templates";
-const branch = process.env.PAGES_BRANCH ?? "highnote-clone-full";
+const branch = process.env.PAGES_BRANCH ?? "highnote";
 const isProd = process.env.NODE_ENV === "production";
 const basePath = isProd ? `/${repo}/${branch}` : "";
 
