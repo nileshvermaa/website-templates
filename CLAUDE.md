@@ -1,4 +1,4 @@
-# CLAUDE.md — `highnote-clone`
+# CLAUDE.md — `starta`
 
 This branch is a dark-themed embedded-fintech landing page, design-inspired by
 [highnote.com](https://highnote.com/). The brand name in the markup is **Strata**
